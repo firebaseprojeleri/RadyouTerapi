@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "907845553135",
+    "firebase_url": "https://radyo-bd616.firebaseio.com",
+    "project_id": "radyo-bd616",
+    "storage_bucket": "radyo-bd616.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907845553135:android:5da8c308aa5d5b07",
+        "android_client_info": {
+          "package_name": "com.rankend.barankaraboa.radyouterapi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "907845553135-gtv75b1es1oarjf7sckpul9kogtmqom8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rankend.barankaraboa.radyouterapi",
+            "certificate_hash": "d813118db84185e29af5ecf77a0853c8a8ab7c63"
+          }
+        },
+        {
+          "client_id": "907845553135-9vhh463p8dav88ek3d62q0i81hmvjg8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWLucAv3bJnG05s5KCJMJeYZ00Y7_qadg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "907845553135-9vhh463p8dav88ek3d62q0i81hmvjg8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

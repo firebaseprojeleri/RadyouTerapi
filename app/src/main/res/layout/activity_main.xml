@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context="com.rankend.barankaraboa.radyouterapi.MainActivity">
+
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true" />
+
+    <com.wang.avi.AVLoadingIndicatorView
+        android:id="@+id/avi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        app:indicatorName="BallScaleIndicator" />
+
+    <LinearLayout
+        android:id="@+id/istekLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <ListView
+                android:id="@+id/isteklerListesi"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:cacheColorHint="@android:color/transparent"
+                android:divider="@null"
+                android:dividerHeight="8dp"></ListView>
+
+            <ImageButton
+                android:id="@+id/closeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/isteklerListesi"
+                android:background="@null"
+                app:srcCompat="@drawable/com_facebook_close" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/yorumLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <ListView
+            android:id="@+id/yorumlarListesi"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:cacheColorHint="@android:color/transparent"
+            android:divider="@null"
+            android:dividerHeight="8dp"
+            android:stackFromBottom="true"
+            android:transcriptMode="alwaysScroll"></ListView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp">
+
+            <LinearLayout
+                android:id="@+id/authLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_main"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.rankend.barankaraboa.radyouterapi.System.CustomImageView
+                    android:id="@+id/pPhoto"
+                    android:layout_width="35dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shape_main"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/message_icon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/userName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#a4b8be"
+                        android:textSize="12dp" />
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <EditText
+                            android:id="@+id/messageText"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Bir şeyler söyle..."
+                            android:imeActionLabel="Gönder"
+                            android:imeOptions="actionGo"
+                            android:maxLines="5"
+                            android:maxWidth="200dp"
+                            android:singleLine="false"
+                            android:textColorHint="#96ffffff" />
+                    </FrameLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/unAuthLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/shape_main"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <com.rankend.barankaraboa.radyouterapi.System.CustomImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="35dp"
+                    android:layout_height="43dp"
+                    android:background="@drawable/shape_main"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/message_icon" />
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="1"
+                    android:text="Yorum yazmak için giriş yap"
+                    android:textColor="#96ffffff" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/kontrolLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom|right"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/oyVerButton"
+                        android:layout_width="43dp"
+                        android:layout_height="43dp"
+                        android:layout_gravity="bottom|right"
+                        android:layout_marginRight="5dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:scaleType="centerCrop"
+                        app:srcCompat="@drawable/oy_ver" />
+
+                    <ImageButton
+                        android:id="@+id/istekYapButton"
+                        android:layout_width="43dp"
+                        android:layout_height="43dp"
+                        android:layout_gravity="bottom|right"
+                        android:layout_marginRight="5dp"
+                        android:background="@null"
+                        android:scaleType="centerCrop"
+                        app:srcCompat="@drawable/istek_yap" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
