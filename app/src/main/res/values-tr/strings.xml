@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">RadyouTerapi</string>
+    <string name="play_connection_error">Google Play servisi hatası.</string>
+    <string name="unable_login">Giriş Yapılamadı! Lütfen tekrar deneyiniz.</string>
+    <string name="banned_message">Yorum yapmanız yasaklandı.</string>
+    <string name="user_joined_chat">
+        <xliff:g id="user_name" example="enjloezz">%1$s</xliff:g> yayına katıldı.
+    </string>
+    <string name="confirm_button">Tamam</string>
+    <string name="request_send_okey">İsteğiniz gönderildi!</string>
+    <string name="request_send_fail">Bir hata oluştu! Lütfen tekrar deneyin.</string>
+    <string name="request_vote_okey">İsteği başarıyla oyladınız!</string>
+    <string name="request_vote_fail">Bir hata oluştu! Lütfen tekrar deneyin.</string>
+    <string name="user_join_welcome_message">Hoşgeldin! Aşağıya rumuzunu yazabilirsin.</string>
+    <string name="user_first_join_welcome_message">Aramıza Hoşgeldin! Aşağıya rumuzunu yazabilirsin.</string>
+    <string name="admin_ban_alert">Kullanıcı Banlanacak! Emin misiniz?</string>
+    <string name="delete">Sil</string>
+    <string name="report">Raporla</string>
+    <string name="reply">Yanıtla</string>
+    <string name="request_message">
+         <xliff:g id="song_name" example="My Favorite">%1$s</xliff:g> şarkısını istiyorum! Lütfen oy ver :)"
+    </string>
+    <string name="request_give_vote">Oy ver</string>
+    <string name="request_withdraw_vote">Oyunu geri al</string>
+    <string name="say_something">Bir şeyler söyle...</string>
+    <string name="send">Gönder</string>
+    <string name="login_for_say_something">Yorum yazmak için giriş yap</string>
+    <string name="request_song_name">İstek yapmak istediğiniz parça.</string>
+    <string name="request_note">Eklemek istediğiniz not.</string>
+    <string name="report_message">Bu kullanıcıyı neden şikayet etmek istiyorsunuz?</string>
+    <string name="ban_reason">Ban sebebi</string>
+    <string name="infinity_ban">Sınırsız ban</string>
+    <string name="ban_time">Ban süresi</string>
+    <string name="make_request">İstek yap</string>
+    <string name="spam_message">Spam</string>
+    <string name="inappropriate_content">Uygunsuz içerik</string>
+    <string name="hide_user_message">Bu kullanıcının mesajlarını gizlemek istiyor musunuz?</string>
+</resources>

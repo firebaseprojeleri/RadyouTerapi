@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -56,15 +57,16 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = "MainActivity";
 
-    public static ArrayList<String> banListesi = new ArrayList<String>();
-    public static ArrayList<YorumClass> yorumListesi = new ArrayList<YorumClass>();
-    public static ArrayList<IstekClass> istekler = new ArrayList();
+    public static ArrayList<String> banListesi = new ArrayList<>();
+    public static ArrayList<YorumClass> yorumListesi = new ArrayList<>();
+    public static ArrayList<IstekClass> istekler = new ArrayList<>();
     public static boolean isAdmin = false;
 
     public static long LoginTime = System.currentTimeMillis();
+    public static long LoginReqTime = System.currentTimeMillis();
     public static boolean bannedUser = false;
-    public static ListView yorumlarListesi;
-    public static ListView isteklerListesi;
+    public ListView yorumlarListesi;
+    public ListView isteklerListesi;
     public AVLoadingIndicatorView avi;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -72,9 +74,9 @@ public class MainActivity extends AppCompatActivity implements
     public FirebaseUser currentUser;
     private FirebaseControllers Controller = new FirebaseControllers(this);
     public static String userNickname;
+    public static ArrayList gizlenenKullanicilar = new ArrayList<>();
 
     public VideoView videoView;
-
 
     private static final int RC_SIGN_IN = 9001;
     @Override
@@ -85,51 +87,10 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
-
         avi= (AVLoadingIndicatorView) findViewById(R.id.avi);
 
         videoView = (VideoView) findViewById(R.id.video_view);
-        videoView.setVideoURI(Uri.parse("rtsp://95.173.179.23/live/Mystream"));
-        videoView.start();
-        avi.show();
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                videoView.setVideoURI(Uri.parse("rtsp://95.173.179.23/live/Mystream"));
-                videoView.start();
-                avi.show();
-            }
-        });
-        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.d("video", "setOnErrorListener ");
-                videoView.setVideoURI(Uri.parse("rtsp://95.173.179.23/live/Mystream"));
-                videoView.start();
-                avi.show();
-                return true;
-            }
-        });
-        videoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-            @Override
-            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                if(what==MediaPlayer.MEDIA_INFO_BUFFERING_START){
-                    avi.show();
-                    return true;
-                }else if(what==MediaPlayer.MEDIA_INFO_UNKNOWN){
-                    avi.show();
-                    return true;
-                }else if(what==MediaPlayer.MEDIA_ERROR_UNSUPPORTED){
-                    avi.show();
-                    return true;
-                }else if(what==MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START){
-                    avi.hide();
-                    return true;
-                }
-                return false;
-            }
-        });
+        initVideo();
         LinearLayout unAuthLayout = (LinearLayout) findViewById(R.id.unAuthLayout) ;
         unAuthLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -169,10 +130,56 @@ public class MainActivity extends AppCompatActivity implements
         IstekAdapter istekAdapter = new IstekAdapter(this, istekler);
         isteklerListesi.setAdapter(istekAdapter);
     }
+    public void initVideo(){
+        final String url = "rtsp://95.173.179.23/live/Mystream";
+        videoView.setVideoURI(Uri.parse(url));
+        videoView.start();
+        avi.show();
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                videoView.setVideoURI(Uri.parse(url));
+                videoView.start();
+                avi.show();
+            }
+        });
+        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.d("video", "setOnErrorListener ");
+                videoView.setVideoURI(Uri.parse(url));
+                videoView.start();
+                avi.show();
+                return true;
+            }
+        });
+        videoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                if(what==MediaPlayer.MEDIA_INFO_BUFFERING_START){
+                    avi.show();
+                    return true;
+                }else if(what==MediaPlayer.MEDIA_INFO_UNKNOWN){
+                    avi.show();
+                    return true;
+                }else if(what==MediaPlayer.MEDIA_ERROR_UNSUPPORTED){
+                    avi.show();
+                    return true;
+                }else if(what==MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START){
+                    avi.hide();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
     @Override
     public void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
+        Log.d(TAG, "OnStart");
+        LoginTime = System.currentTimeMillis();
         Controller.yorumDinle();
         Controller.banDinle();
         Controller.istekleriGetir();
@@ -185,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements
             mAuth.removeAuthStateListener(mAuthListener);
         }
         Controller.RemoveListeners();
+        Log.d(TAG, "OnStop");
     }
     @Override
     public void onDestroy(){
@@ -196,10 +204,22 @@ public class MainActivity extends AppCompatActivity implements
     public void onPause() {
         super.onPause();
     }
+
+    @Override
+    public void onBackPressed() {
+        final LinearLayout istekLayout = (LinearLayout) findViewById(R.id.istekLayout);
+        if(istekLayout.getVisibility() == View.VISIBLE){
+            final LinearLayout yorumLayout = (LinearLayout) findViewById(R.id.yorumLayout);
+            istekLayout.setVisibility(View.GONE);
+            yorumLayout.setVisibility(View.VISIBLE);
+        }else{
+            super.onBackPressed();
+        }
+    }
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getResources().getString(R.string.play_connection_error), Toast.LENGTH_SHORT).show();
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -221,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         initUI();
                         if (!task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Giriş Yapılamadı! Lütfen tekrar deneyiniz.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getResources().getString(R.string.unable_login), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -245,13 +265,13 @@ public class MainActivity extends AppCompatActivity implements
             try{
                 Glide
                         .with(this)
-                        .load(currentUser.getPhotoUrl().toString())
+                        .load(currentUser.getPhotoUrl())
                         .centerCrop()
                         .placeholder(R.drawable.pp_default)
                         .crossFade()
                         .into(avatar);
-            }catch (IllegalArgumentException ex){
-
+            }catch (IllegalArgumentException | NullPointerException ex){
+                Log.e(TAG, ex.getMessage());
             }
             userName.setText("@"+userNickname);
             unAuthLayout.setVisibility(View.GONE);
@@ -274,20 +294,12 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
-        messageText.setOnKeyListener(new View.OnKeyListener()
-        {
-            public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                if (event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    switch (keyCode)
-                    {
-                        case KeyEvent.KEYCODE_DPAD_CENTER:
-                        case KeyEvent.KEYCODE_ENTER:
-                            Controller.MesajGonder(currentUser, messageText.getText().toString());
-                            return true;
-                        default:
-                            break;
+        messageText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                        Controller.MesajGonder(currentUser, messageText.getText().toString());
+                        return true;
                     }
                 }
                 return false;
@@ -327,15 +339,15 @@ public class MainActivity extends AppCompatActivity implements
                 final View istekForm = factory.inflate(R.layout.istek_layout, null);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("İstek yap")
-                        .setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                builder.setTitle(getResources().getString(R.string.make_request))
+                        .setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 EditText istekParcaText = (EditText) istekForm.findViewById(R.id.istekParcaText);
                                 EditText notText = (EditText) istekForm.findViewById(R.id.notText);
                                 Controller.istekYap(currentUser,istekParcaText.getText().toString(),notText.getText().toString());
                             }
                         })
-                        .setNegativeButton("İptal", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
                             }

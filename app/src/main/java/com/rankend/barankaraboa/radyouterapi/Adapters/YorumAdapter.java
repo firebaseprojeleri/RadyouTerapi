@@ -74,14 +74,14 @@ public class YorumAdapter extends BaseAdapter {
                         if(!MainActivity.isAdmin)
                             return;
                         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(activity);
-                        builder.setTitle("Kullanıcı Banlanacak! Emin misiniz?")
-                                .setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                        builder.setTitle(activity.getResources().getString(R.string.admin_ban_alert))
+                                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         FirebaseControllers Controller = new FirebaseControllers(activity);
-                                        Controller.kullaniciBanla(yorum.getUserNickName());
+                                        Controller.kullaniciBanla(yorum.getUserId());
                                     }
                                 })
-                                .setNegativeButton("İptal", new DialogInterface.OnClickListener() {
+                                .setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
 
                                     }
@@ -94,23 +94,20 @@ public class YorumAdapter extends BaseAdapter {
 
                 builder.setTitle("@"+yorum.getUserNickName());
 
-                builder.setItems(new CharSequence[] {"Sil","Raporla", "Yanıtla"} ,
+                builder.setItems(new CharSequence[] {activity.getResources().getString(R.string.delete), activity.getResources().getString(R.string.reply)} ,
                         new DialogInterface.OnClickListener()
                         {
                             public void onClick(DialogInterface dialog, int which) {
-                                if(which == 2){
+                                if(which == 1){
                                     EditText messageText = (EditText) activity.findViewById(R.id.messageText);
                                     messageText.setText("@"+yorum.getUserNickName()+" ");
                                     messageText.setFocusableInTouchMode(true);
                                     messageText.requestFocus();
                                     int position = messageText.getText().toString().length();
                                     messageText.setSelection(position);
-                                }else if(which == 1){
-                                    //TODO
-                                    //Raporlamak için gerekli firebase sorguları yazılacak
                                 }else if(which == 0){
-                                    //TODO
-                                    //Yorum silmek için gerekli firebase sorguları yazılacak
+                                    FirebaseControllers controllers = new FirebaseControllers(activity);
+                                    controllers.yorumSil(yorum);
                                 }
                             }
                         });
@@ -125,7 +122,7 @@ public class YorumAdapter extends BaseAdapter {
 
                 builder.setTitle("@"+yorum.getUserNickName());
 
-                builder.setItems(new CharSequence[] {"Raporla", "Yanıtla"} ,
+                builder.setItems(new CharSequence[] {activity.getResources().getString(R.string.report), activity.getResources().getString(R.string.reply )} ,
                         new DialogInterface.OnClickListener()
                         {
                             public void onClick(DialogInterface dialog, int which) {
@@ -137,8 +134,8 @@ public class YorumAdapter extends BaseAdapter {
                                     int position = messageText.getText().toString().length();
                                     messageText.setSelection(position);
                                 }else if(which == 0){
-                                    //TODO
-                                    //Raporlamak için gerekli firebase sorguları yazılacak
+                                    FirebaseControllers controllers = new FirebaseControllers(activity);
+                                    controllers.sikayetEt(yorum);
                                 }
                             }
                         });
@@ -164,9 +161,16 @@ public class YorumAdapter extends BaseAdapter {
             @Override
             public void run() {
                 try{
+                    if(!yorumListesi.get(position).joined){
+                        if(yorumListesi.get(position).key.equals(yorum.key)){
+                            yorumListesi.remove(position);
+                            notifyDataSetChanged();
+                        }
+                    }else{
+                        yorumListesi.remove(position);
+                        notifyDataSetChanged();
+                    }
 
-                    yorumListesi.remove(position);
-                    notifyDataSetChanged();
                 }catch (IndexOutOfBoundsException ex){
                     ex.getStackTrace();
                 }

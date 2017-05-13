@@ -132,9 +132,9 @@
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:background="@null"
-                            android:hint="Bir şeyler söyle..."
-                            android:imeActionLabel="Gönder"
-                            android:imeOptions="actionGo"
+                            android:hint="@string/say_something"
+                            android:imeActionLabel="@string/send"
+                            android:imeOptions="actionSend|actionDone|actionGo|actionNext"
                             android:maxLines="5"
                             android:maxWidth="200dp"
                             android:singleLine="false"
@@ -167,7 +167,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_weight="1"
-                    android:text="Yorum yazmak için giriş yap"
+                    android:text="@string/login_for_say_something"
                     android:textColor="#96ffffff" />
 
             </LinearLayout>

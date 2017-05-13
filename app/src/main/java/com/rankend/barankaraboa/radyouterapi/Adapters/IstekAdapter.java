@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.rankend.barankaraboa.radyouterapi.MainActivity;
 import com.rankend.barankaraboa.radyouterapi.Models.IstekClass;
 import com.rankend.barankaraboa.radyouterapi.R;
 import com.rankend.barankaraboa.radyouterapi.System.CustomImageView;
@@ -60,7 +61,7 @@ public class IstekAdapter extends BaseAdapter {
         CustomImageView userImage = (CustomImageView) satirView.findViewById(R.id.userImage);
         userName.setText("@"+istek.userNickName);
 
-        yorumText.setText(istek.istekSarki+" şarkısını istiyorum! Lütfen oy ver :)");
+        yorumText.setText(activity.getResources().getString(R.string.request_message, istek.istekSarki));
         Glide
                 .with(satirView.getContext())
                 .load(istek.userImage)
@@ -71,7 +72,14 @@ public class IstekAdapter extends BaseAdapter {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(satirView.getContext());
         builder.setTitle("@"+istek.userNickName);
-        builder.setItems(new CharSequence[] {"Oy ver"} ,
+
+        String resName = activity.getResources().getString(R.string.request_give_vote);
+        if ( istek.oylar.containsKey(((MainActivity) activity).currentUser.getUid()) )
+        {
+            resName = activity.getResources().getString(R.string.request_withdraw_vote);
+        }
+
+        builder.setItems(new CharSequence[] {resName} ,
                 new DialogInterface.OnClickListener()
                 {
                     public void onClick(DialogInterface dialog, int which) {

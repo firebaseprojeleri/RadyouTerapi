@@ -1,3 +1,38 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">RadyouTerapi</string>
+    <string name="play_connection_error">Google Play Services error.</string>
+    <string name="unable_login">Unable to login! Please try again.</string>
+    <string name="banned_message">Yorum yapmanız yasaklandı.</string>
+    <string name="user_joined_chat">
+        <xliff:g id="user_name" example="enjloezz">%1$s</xliff:g> has joined the chat.
+    </string>
+    <string name="confirm_button">Okey</string>
+    <string name="request_send_okey">Your request has been applied!</string>
+    <string name="request_send_fail">There is something wrong! Please try again.</string>
+    <string name="request_vote_okey">You have successfully voted the request!</string>
+    <string name="request_vote_fail">There is something wrong! Please try again.</string>
+    <string name="user_join_welcome_message">Welcome! You can type your nickname below.</string>
+    <string name="user_first_join_welcome_message">Welcome the aboard! You can type your nickname below.</string>
+    <string name="admin_ban_alert">This user will be banned! Are you sure?</string>
+    <string name="delete">Delete</string>
+    <string name="report">Report</string>
+    <string name="reply">Reply</string>
+    <string name="request_message">
+        Vote my song <xliff:g id="song_name" example="My Favorite">%1$s</xliff:g> for the next, please :)"
+    </string>
+    <string name="request_give_vote">Give vote</string>
+    <string name="request_withdraw_vote">Withdraw</string>
+    <string name="say_something">Say something...</string>
+    <string name="send">Send</string>
+    <string name="login_for_say_something">You have to be logged for join chat</string>
+    <string name="request_song_name">What do you want to listen?</string>
+    <string name="request_note">Is there any note for dj?</string>
+    <string name="report_message">Why do you want to report this user?</string>
+    <string name="ban_reason">Ban reason</string>
+    <string name="infinity_ban">Infinity ban</string>
+    <string name="ban_time">Ban time</string>
+    <string name="make_request">Make request</string>
+    <string name="spam_message">Spam</string>
+    <string name="inappropriate_content">Inappropriate Content</string>
+    <string name="hide_user_message">Do you want to hide messages this user?</string>
 </resources>

@@ -5,12 +5,19 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -23,12 +30,15 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.rankend.barankaraboa.radyouterapi.MainActivity;
+import com.rankend.barankaraboa.radyouterapi.Models.BanClass;
 import com.rankend.barankaraboa.radyouterapi.Models.IstekClass;
 import com.rankend.barankaraboa.radyouterapi.Models.KullaniciBilgileriClass;
 import com.rankend.barankaraboa.radyouterapi.Models.KullanicilarClass;
+import com.rankend.barankaraboa.radyouterapi.Models.SikayetClass;
 import com.rankend.barankaraboa.radyouterapi.Models.YorumClass;
 import com.rankend.barankaraboa.radyouterapi.R;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -49,18 +59,20 @@ public class FirebaseControllers {
     //listeners
     private ChildEventListener yorumListener;
     private ChildEventListener banListener;
-    private ChildEventListener istekListener;
+    private ValueEventListener istekListener;
 
     public void yorumDinle() {
+        if(yorumListener!=null)
+            return;
         DatabaseReference yorumRef = mDatabase.child("yorumlar");
-        yorumListener = new ChildEventListener() {
+        yorumListener = yorumRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 YorumClass data = dataSnapshot.getValue(YorumClass.class);
                 data.key = dataSnapshot.getKey();
-                if (data.getAddedTime() > MainActivity.LoginTime) {
+                if (data.getAddedTime() > MainActivity.LoginTime && MainActivity.banListesi.indexOf(data.getUserId()) == -1 && MainActivity.gizlenenKullanicilar.indexOf(data.getUserId()) == -1 ) {
                     MainActivity.yorumListesi.add(data);
-                    ((BaseAdapter) MainActivity.yorumlarListesi.getAdapter()).notifyDataSetChanged();
+                    ((BaseAdapter) ((MainActivity) activity).yorumlarListesi.getAdapter()).notifyDataSetChanged();
                 }
             }
 
@@ -82,27 +94,37 @@ public class FirebaseControllers {
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        };
-        yorumRef.addChildEventListener(yorumListener);
+        });
     }
 
     public void banDinle(){
+        if(banListener!=null)
+            return;
         DatabaseReference banRef = mDatabase.child("banlistesi");
-        banListener = new ChildEventListener() {
+        banListener = banRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 MainActivity.banListesi.add(dataSnapshot.getKey());
+                BanClass banClass = dataSnapshot.getValue(BanClass.class);
                 if ( ((MainActivity) activity).currentUser != null && ((MainActivity) activity).currentUser.getUid().equals(dataSnapshot.getKey()) ) {
-                    MainActivity.bannedUser = true;
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setMessage("Yorum yapmanız yasaklandı.")
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .create().show();
-                    final TextView message = (TextView) activity.findViewById(R.id.textView);
-                    ((MainActivity) activity).initUI();
-                    message.setText("Yorum yazmanız yasaklandı.");
-                }else{
-                    MainActivity.bannedUser = false;
+                    MainActivity.bannedUser = banClass.banStatus;
+                    if(banClass.banStatus){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        String alertMessage = activity.getResources().getString(R.string.banned_message);
+                        if(banClass.banReason != null && !banClass.banReason.isEmpty())
+                            alertMessage += "\n" +activity.getResources().getString(R.string.ban_reason)+": "+banClass.banReason;
+                        builder.setMessage(alertMessage)
+                                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .create().show();
+                        final TextView message = (TextView) activity.findViewById(R.id.textView);
+                        message.setText(activity.getResources().getString(R.string.banned_message));
+                    }
                     ((MainActivity) activity).initUI();
                 }
             }
@@ -110,11 +132,35 @@ public class FirebaseControllers {
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 MainActivity.banListesi.set(MainActivity.banListesi.indexOf(dataSnapshot.getKey()), dataSnapshot.getKey());
+                BanClass banClass = dataSnapshot.getValue(BanClass.class);
+                if ( ((MainActivity) activity).currentUser != null && ((MainActivity) activity).currentUser.getUid().equals(dataSnapshot.getKey()) ) {
+                    MainActivity.bannedUser = banClass.banStatus;
+                    if(banClass.banStatus){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        String alertMessage = activity.getResources().getString(R.string.banned_message);
+                        if(banClass.banReason != null && !banClass.banReason.isEmpty())
+                            alertMessage += "\n" +activity.getResources().getString(R.string.ban_reason)+": "+banClass.banReason;
+                        builder.setMessage(alertMessage)
+                                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .create().show();
+                        final TextView message = (TextView) activity.findViewById(R.id.textView);
+                        message.setText(activity.getResources().getString(R.string.banned_message));
+                    }
+                    ((MainActivity) activity).initUI();
+                }
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 MainActivity.banListesi.remove(MainActivity.banListesi.indexOf(dataSnapshot.getKey()));
+                MainActivity.bannedUser = false;
+                ((MainActivity) activity).initUI();
             }
 
             @Override
@@ -124,22 +170,20 @@ public class FirebaseControllers {
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        };
-        banRef.addChildEventListener(banListener);
+        });
     }
     private void SetUserNickname(String nickname){
         MainActivity.setUserNickname(nickname);
         if (!firstJoin) {
             YorumClass joinedMessage = new YorumClass();
-            joinedMessage.setYorum(nickname + " yayına katıldı.");
+            joinedMessage.setYorum(activity.getResources().getString(R.string.user_joined_chat, nickname));
             joinedMessage.joined = true;
-            MainActivity.yorumListesi.add(joinedMessage);
-            ((BaseAdapter) MainActivity.yorumlarListesi.getAdapter()).notifyDataSetChanged();
+            mDatabase.child("yorumlar").push().setValue(joinedMessage);
             firstJoin = true;
         }
         ((MainActivity) activity).initUI();
-
     }
+
     private void getUserNickname(String userId){
        mDatabase.child("kullanıcılar/"+userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -157,37 +201,28 @@ public class FirebaseControllers {
     }
 
     public void istekleriGetir(){
-        istekListener = new ChildEventListener() {
+        if(istekListener!=null)
+            return;
+        istekListener = mDatabase.child("istekler").orderByChild("oySayisi").addValueEventListener(new ValueEventListener(){
+
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                IstekClass istek = dataSnapshot.getValue(IstekClass.class);
-                if (istek.ratedTime > MainActivity.LoginTime) {
-                    istek.key = dataSnapshot.getKey();
-                    MainActivity.istekler.add(0,istek);
-                    ((BaseAdapter) MainActivity.isteklerListesi.getAdapter()).notifyDataSetChanged();
+            public void onDataChange(DataSnapshot istekSnapshot) {
+                MainActivity.istekler.clear();
+                for (DataSnapshot dataSnapshot: istekSnapshot.getChildren()) {
+                    IstekClass istek = dataSnapshot.getValue(IstekClass.class);
+                    if (istek.ratedTime > MainActivity.LoginReqTime) {
+                        istek.key = dataSnapshot.getKey();
+                        MainActivity.istekler.add(0,istek);
+                        ((BaseAdapter) ((MainActivity) activity).isteklerListesi.getAdapter()).notifyDataSetChanged();
+                    }
                 }
             }
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                for ( int i = 0; i < MainActivity.istekler.size(); i++)
-                    if (Objects.equals(MainActivity.istekler.get(i).key, dataSnapshot.getKey()))
-                        MainActivity.istekler.remove(i);
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
             public void onCancelled(DatabaseError databaseError) {
+
             }
-        };
-        mDatabase.child("istekler").orderByChild("oySayisi").addChildEventListener(istekListener);
+        });
     }
 
     public void istekYap(final FirebaseUser user, String istekSarki, String istekNot){
@@ -201,29 +236,66 @@ public class FirebaseControllers {
             public void onComplete(@NonNull Task<Void> task) {
                 if ( task.isSuccessful() )
                 new AlertDialog.Builder(activity)
-                    .setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                    .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
                         }
-                    }).setMessage("İsteğiniz gönderildi!")
+                    }).setMessage(activity.getResources().getString(R.string.request_send_okey))
                     .create()
                     .show();
                 else
-                    new AlertDialog.Builder(activity).setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                    new AlertDialog.Builder(activity).setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
                         }
-                    }).setMessage("Bir hata oluştu! Lütfen tekrar deneyin.").create().show();
+                    }).setMessage(activity.getResources().getString(R.string.request_send_fail)).create().show();
 
             }
         });
 
     }
 
-    public void kullaniciBanla(String userId){
-        mDatabase.child("banlistesi").child(userId).setValue(true);
+    public void kullaniciBanla(final String userId){
+        BanClass banClass = new BanClass();
+        banClass.banStatus = true;
+        mDatabase.child("banlistesi").child(userId).setValue(banClass);
+
+        LayoutInflater factory = LayoutInflater.from(activity);
+        final View banSebepForm = factory.inflate(R.layout.ban_sebep_layout, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(activity.getResources().getString(R.string.ban_reason))
+                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        EditText banSebepText = (EditText) banSebepForm.findViewById(R.id.banSebepText);
+                        TimePicker unBanTimePicker = (TimePicker) banSebepForm.findViewById(R.id.unBanTimePicker);
+                        CheckBox infinityCheck = (CheckBox) banSebepForm.findViewById(R.id.infinityCheck);
+                        BanClass banClass = new BanClass();
+                        banClass.banReason = banSebepText.getText().toString();
+                        banClass.banStatus = true;
+                        banClass.banTime = System.currentTimeMillis();
+                        Calendar now = Calendar.getInstance();
+                        now.set(Calendar.HOUR, unBanTimePicker.getCurrentHour());
+                        now.set(Calendar.MINUTE, unBanTimePicker.getCurrentMinute());
+                        banClass.unBanTime = now.getTimeInMillis();
+                        if(infinityCheck.isChecked())
+                            banClass.unBanTime = 0;
+                        mDatabase.child("banlistesi").child(userId).setValue(banClass);
+                    }
+                })
+                .setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.setView(banSebepForm);
+        builder.create();
+        builder.show();
+    }
+
+    public void yorumSil(YorumClass yorum){
+        mDatabase.child("yorumlar/" + yorum.key).removeValue();
     }
 
     public void istekOyla(final FirebaseUser user, String istekId){
@@ -252,19 +324,19 @@ public class FirebaseControllers {
             public void onComplete(DatabaseError databaseError, boolean b,
                                    DataSnapshot dataSnapshot) {
                 if ( b )
-                new AlertDialog.Builder(activity).setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                new AlertDialog.Builder(activity).setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
-                }).setMessage("İsteği başarıyla oyladınız!").create().show();
+                }).setMessage(activity.getResources().getString(R.string.request_vote_okey)).create().show();
                 else
-                    new AlertDialog.Builder(activity).setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                    new AlertDialog.Builder(activity).setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
                         }
-                    }).setMessage("Bir hata oluştu! Lütfen tekrar deneyin.").create().show();
+                    }).setMessage(activity.getResources().getString(R.string.request_vote_fail)).create().show();
 
             }
         });
@@ -278,9 +350,9 @@ public class FirebaseControllers {
                 if (dataSnapshot.hasChild(user.getUid())) {
                     if ( dataSnapshot.child(user.getUid()).hasChild("admin") ) {
                         KullanicilarClass kullanicilar = dataSnapshot.child(user.getUid()).getValue(KullanicilarClass.class);
-                        if (kullanicilar.admin)
-                            MainActivity.isAdmin = true;
-                    }
+                        MainActivity.isAdmin = kullanicilar.admin;
+                    }else
+                        MainActivity.isAdmin = false;
                     if ( !dataSnapshot.child(user.getUid()).hasChild("nickname") && !show){
                             final EditText input = new EditText(activity);
                             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -289,8 +361,8 @@ public class FirebaseControllers {
                             input.setLayoutParams(lp);
                             Log.d("FirebaseControllers", "Kullanıcı tekrar Göster");
                             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                            builder.setMessage("Hoşgeldin! Aşağıya rumuzunu yazabilirsin.")
-                                    .setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                            builder.setMessage(activity.getResources().getString(R.string.user_join_welcome_message))
+                                    .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             KullanicilarClass kullanici = dataSnapshot.child(user.getUid()).getValue(KullanicilarClass.class);
                                             kullanici.nickname = input.getText().toString();
@@ -300,7 +372,7 @@ public class FirebaseControllers {
 
                                         }
                                     })
-                                    .setNegativeButton("İptal", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             FirebaseAuth.getInstance().signOut();
                                         }
@@ -339,8 +411,9 @@ public class FirebaseControllers {
         kullaniciBilgileri.username = user.getDisplayName();
         Log.d("FirebaseControllers", "Kullanıcı Oluştur Göster");
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setMessage("Aramıza Hoşgeldin! Aşağıya rumuzunu yazabilirsin.")
-                .setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+        show = true;
+        builder.setMessage(activity.getResources().getString(R.string.user_first_join_welcome_message))
+                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         kullaniciBilgileri.nickname = input.getText().toString();
                         mDatabase.child("kullanıcılar/"+user.getUid()+"/nickname").setValue(input.getText().toString());
@@ -350,7 +423,7 @@ public class FirebaseControllers {
                         getUserNickname(user.getUid());
                     }
                 })
-                .setNegativeButton("İptal", new DialogInterface.OnClickListener() {
+                .setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         FirebaseAuth.getInstance().signOut();
                     }
@@ -358,9 +431,61 @@ public class FirebaseControllers {
         builder.setView(input);
         builder.create();
         builder.show();
-        show = true;
     }
 
+    public void sikayetEt(final YorumClass yorum){
+        LayoutInflater factory = LayoutInflater.from(activity);
+
+        final AlertDialog.Builder hideBuilder = new AlertDialog.Builder(activity).setMessage(activity.getResources().getString(R.string.hide_user_message))
+                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        MainActivity.gizlenenKullanicilar.add(yorum.getUserId());
+                    }
+                }).setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        }).setCancelable(true);
+
+        final View sikayetSebepForm = factory.inflate(R.layout.sikayet_sebep_layout, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(activity.getResources().getString(R.string.ban_reason))
+                .setPositiveButton(activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        final SikayetClass sikayet = new SikayetClass();
+                        sikayet.sikayetEden = ((MainActivity) activity).currentUser.getUid();
+                        sikayet.sikayetZaman = System.currentTimeMillis();
+                        sikayet.sikayetEdilenMesaj = yorum.getYorum();
+                        sikayet.sikayetEdilenKullanici = yorum.getUserId();
+                        RadioGroup sikayetSebepGroup = (RadioGroup) sikayetSebepForm.findViewById(R.id.sikayetSebepGroup);
+                        int selected = sikayetSebepGroup.getCheckedRadioButtonId();
+                        switch (selected){
+                            case R.id.spamRadioButton:
+                                sikayet.sikayetSebep = "Spam";
+                                break;
+                            case R.id.uygunsuzRadioButton:
+                                sikayet.sikayetSebep = "Uygunsuz içerik";
+                        }
+
+                        mDatabase.child("yorum_sikayet").push().setValue(sikayet).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        hideBuilder.show();
+                    }
+                })
+                .setNegativeButton(activity.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.setView(sikayetSebepForm);
+        builder.create();
+        builder.show();
+    }
     public void MesajGonder(FirebaseUser user, String yorumText){
         if ( MainActivity.banListesi.indexOf(user.getUid()) != -1 )
             return;
@@ -380,8 +505,8 @@ public class FirebaseControllers {
     }
 
     public void RemoveListeners(){
-        mDatabase.removeEventListener(yorumListener);
-        mDatabase.removeEventListener(banListener);
-        mDatabase.removeEventListener(istekListener);
+        mDatabase.child("yorumlar").removeEventListener(yorumListener);
+        mDatabase.child("banlistesi").removeEventListener(banListener);
+        mDatabase.child("istekler").orderByChild("oySayisi").removeEventListener(istekListener);
     }
 }

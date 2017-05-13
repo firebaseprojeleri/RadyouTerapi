@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="İstek yapmak istediğiniz parça."
+        android:hint="@string/request_song_name"
         android:inputType="textPersonName" />
 
     <EditText
@@ -19,6 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Eklemek istediğiniz not."
+        android:hint="@string/request_note"
         android:inputType="textPersonName" />
 </LinearLayout>
